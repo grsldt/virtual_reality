@@ -5,41 +5,41 @@ const statusEl = document.getElementById("status");
 const startBtn = document.getElementById("startBtn");
 const followBtn = document.getElementById("followBtn");
 
-const BTN_SIZE = 64;
+const drawCanvas = document.getElementById("draw");
+const dctx = drawCanvas.getContext("2d", { alpha: true });
 
 function setStatus(msg){ statusEl.textContent = msg; }
 const lerp = (a,b,t)=> a + (b-a)*t;
 const clamp = (v,a,b)=> Math.max(a, Math.min(b, v));
 
+function resize(){
+  drawCanvas.width = Math.floor(window.innerWidth * devicePixelRatio);
+  drawCanvas.height = Math.floor(window.innerHeight * devicePixelRatio);
+  dctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+window.addEventListener("resize", resize);
+resize();
+
 let handLandmarker = null;
 let running = false;
 
-// cible & lissage
-let x = 50, y = 150;
-let sx = x, sy = y;
-
-// vitesse (pour tilt)
-let vx = 0, vy = 0;
-
-// pinch 0..1
+// position lissée index
+let x=0, y=0, sx=0, sy=0;
+let hasPrev = false;
 let pinch01 = 0;
+let penDown = false;
 
-// util distance
-function dist(ax, ay, bx, by) {
-  const dx = ax - bx, dy = ay - by;
-  return Math.hypot(dx, dy);
-}
+function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
 
 async function startCamera(){
   const stream = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: "environment" },
     audio: false
   });
-
   video.srcObject = stream;
   video.muted = true;
-  video.setAttribute("playsinline", "");
-  video.setAttribute("webkit-playsinline", "");
+  video.setAttribute("playsinline","");
+  video.setAttribute("webkit-playsinline","");
   await video.play();
 }
 
@@ -59,92 +59,95 @@ async function loadModel(){
   });
 }
 
+function clearDrawing(){
+  dctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+}
+
+// Dessin “pro” : trait lissé + épaisseur selon pinch
+function drawLine(x1,y1,x2,y2,pressure){
+  const w = 3 + pressure * 10; // 3..13
+  dctx.lineCap = "round";
+  dctx.lineJoin = "round";
+  dctx.strokeStyle = "rgba(0,220,255,0.85)";
+  dctx.lineWidth = w;
+
+  dctx.beginPath();
+  dctx.moveTo(x1,y1);
+  dctx.lineTo(x2,y2);
+  dctx.stroke();
+}
+
 function updateFromHand(res){
-  if (!res?.landmarks?.length) return false;
+  if(!res?.landmarks?.length) return false;
 
   const lm = res.landmarks[0];
 
-  // Index tip = 8
+  // index tip
   const tip = lm[8];
-  const tx = tip.x * window.innerWidth;
-  const ty = tip.y * window.innerHeight;
+  x = tip.x * window.innerWidth;
+  y = tip.y * window.innerHeight;
 
-  x = tx;
-  y = ty;
-
-  // Pinch: thumb tip (4) <-> index tip (8)
+  // pinch
   const th = lm[4];
   const thx = th.x * window.innerWidth;
   const thy = th.y * window.innerHeight;
+  const d = dist(x,y, thx, thy);
 
-  const d = dist(tx, ty, thx, thy);
-
-  // Calibrage pinch (ajuste si besoin)
-  const p = 1 - clamp((d - 20) / (140 - 20), 0, 1);
+  const p = 1 - clamp((d - 20) / (140 - 20), 0, 1); // 0 open, 1 pinch
   pinch01 = lerp(pinch01, p, 0.25);
+
+  // stylo ON si pinch assez fermé
+  penDown = pinch01 > 0.55;
 
   return true;
 }
 
-function render(active){
-  if (!active) {
+function renderCursor(active){
+  if(!active){
     followBtn.classList.remove("active");
-    // “cache” hors écran sans flicker
     followBtn.style.transform = `translate(${-200}px, ${-200}px)`;
     return;
   }
-
   followBtn.classList.add("active");
-
-  // smoothing position
-  const prevX = sx, prevY = sy;
-  sx = lerp(sx, x, 0.26);
-  sy = lerp(sy, y, 0.26);
-
-  // velocity (smoothed)
-  vx = lerp(vx, sx - prevX, 0.35);
-  vy = lerp(vy, sy - prevY, 0.35);
-
-  // tilt / stretch selon vitesse
-  const speed = Math.hypot(vx, vy);
-  const tilt = clamp(speed * 2.0, 0, 18); // deg
-  const ang = Math.atan2(vy, vx) * (180 / Math.PI);
-
-  // scale selon pinch
-  const scale = 1 + pinch01 * 0.55;
-
-  // stretch léger (pro)
-  const stretch = clamp(speed * 0.06, 0, 0.25);
-  const sx2 = scale * (1 + stretch);
-  const sy2 = scale * (1 - stretch);
-
-  // glow selon pinch
-  const glow = 0.6 + pinch01 * 0.9;
-  followBtn.style.filter = `drop-shadow(0 0 ${18 + pinch01*18}px rgba(0,255,200,${glow}))`;
-
-  // centre le bouton
-  const px = sx - BTN_SIZE / 2;
-  const py = sy - BTN_SIZE / 2;
-
-  followBtn.style.transform =
-    `translate(${px}px, ${py}px) rotate(${ang}deg) rotateX(${tilt}deg) scale(${sx2}, ${sy2})`;
+  sx = lerp(sx, x, 0.25);
+  sy = lerp(sy, y, 0.25);
+  followBtn.style.transform = `translate(${sx - 48}px, ${sy - 48}px) scale(${1 + pinch01*0.4})`;
 }
 
+let prevX=0, prevY=0;
+
 function loop(){
-  if (!running) return;
+  if(!running) return;
 
   let active = false;
 
-  if (handLandmarker && video.readyState >= 2) {
+  if(handLandmarker && video.readyState >= 2){
     const now = performance.now();
     const res = handLandmarker.detectForVideo(video, now);
     active = updateFromHand(res);
   }
 
-  if (active) setStatus("Main détectée ✅ (pinch = boost)");
-  else setStatus("Mets ta main dans le cadre…");
+  if(active){
+    setStatus(penDown ? "✍️ Écriture (pinch)" : "Main détectée ✅ (pinch pour écrire)");
+    renderCursor(true);
 
-  render(active);
+    // dessin
+    if(!hasPrev){
+      prevX = sx; prevY = sy;
+      hasPrev = true;
+    }
+
+    if(penDown){
+      drawLine(prevX, prevY, sx, sy, pinch01);
+    }
+
+    prevX = sx; prevY = sy;
+  } else {
+    setStatus("Mets ta main dans le cadre…");
+    renderCursor(false);
+    hasPrev = false;
+  }
+
   requestAnimationFrame(loop);
 }
 
@@ -157,12 +160,21 @@ startBtn.addEventListener("click", async ()=>{
     setStatus("Modèle main…");
     await loadModel();
 
-    setStatus("OK ✅ Mets ta main devant la caméra");
+    setStatus("OK ✅ Pinch (pouce-index) pour écrire");
     running = true;
+
+    // double-tap écran = effacer
+    let lastTap = 0;
+    window.addEventListener("pointerdown", () => {
+      const now = Date.now();
+      if(now - lastTap < 300) clearDrawing();
+      lastTap = now;
+    });
+
     loop();
   } catch(e){
     console.error(e);
-    setStatus("Erreur : HTTPS + autoriser la caméra, puis recharge.");
+    setStatus("Erreur : HTTPS + autoriser caméra, puis recharge.");
     startBtn.disabled = false;
   }
 });
