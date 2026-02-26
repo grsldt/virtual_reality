@@ -2,69 +2,31 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hand Follow</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Hand Write</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
-<body style="margin:0;overflow:hidden;background:black;">
+<body>
+  <!-- Caméra -->
+  <video id="video" playsinline webkit-playsinline muted></video>
 
-  <!-- VIDEO CAMERA -->
-  <video id="video"
-    playsinline
-    webkit-playsinline
-    muted
-    style="
-      position:fixed;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      z-index:1;
-    ">
-  </video>
+  <!-- Canvas pour dessiner -->
   <canvas id="draw"></canvas>
 
-  <!-- BOUTON QUI SUIT -->
-  <button id="followBtn"
-    style="
-      position:fixed;
-      left:0;
-      top:0;
-      width:60px;
-      height:60px;
-      border-radius:999px;
-      border:none;
-      background:white;
-      font-size:24px;
-      z-index:9999;
-      transform:translate(50px,150px);
-      pointer-events:none;
-    ">
-    👆
-  </button>
+  <!-- Curseur/point qui suit le doigt (energy style) -->
+  <div id="followBtn"></div>
 
   <!-- UI -->
-  <div style="
-    position:fixed;
-    top:20px;
-    left:20px;
-    z-index:10000;
-    color:white;
-    font-family:sans-serif;
-  ">
-    <div id="status">test Clique Start</div>
-    <button id="startBtn"
-      style="
-        margin-top:10px;
-        padding:10px 14px;
-        border-radius:10px;
-        border:none;
-      ">
-      Start
-    </button>
+  <div id="ui">
+    <div class="panel">
+      <div class="title">Hand Write</div>
+      <div id="status">Clique Start</div>
+      <button id="startBtn">Start</button>
+      <div class="hint">Double-tap écran = effacer</div>
+    </div>
   </div>
 
   <script type="module" src="app.js"></script>
-
 </body>
 </html>
