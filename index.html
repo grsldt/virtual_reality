@@ -3,26 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Hand AR – Pro (MediaPipe)</title>
+  <title>Hand AR – Boule contrôlée par la main</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+  <!-- Caméra -->
   <video id="video" playsinline webkit-playsinline muted></video>
+
+  <!-- Dessin (boule + repères) -->
   <canvas id="canvas"></canvas>
 
+  <!-- UI -->
   <div id="ui">
     <div class="card">
-      <div class="title">Hand AR (caméra + main)</div>
-      <div id="status">Clique Start</div>
-
-      <div class="row">
-        <button id="startBtn">Start</button>
-        <button id="switchBtn" disabled>Switch</button>
-      </div>
-
+      <div><b>Hand AR (sans WebXR)</b></div>
+      <div id="status">Clique “Start”</div>
+      <button id="startBtn">Start</button>
       <div class="small">
-        Astuces : bonne lumière • main entière visible • 30–80cm.
+        Astuce: bonne lumière, main à ~30–70cm.
       </div>
     </div>
   </div>
