@@ -40,3 +40,24 @@ a-scene, canvas {
   width: 100% !important;
   height: 100% !important;
 }
+
+/* Force A-Frame/AR.js à occuper tout l'écran sur iPhone */
+a-scene, canvas {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* On garde ton UI au-dessus */
+#ui { z-index: 10; }
+
+
+#startBtn{
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  pointer-events: auto; /* important car #ui est pointer-events:none */
+}
