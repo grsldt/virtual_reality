@@ -63,12 +63,17 @@ button:disabled { opacity: 0.5; }
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 20;
+  z-index: 9999;
   width: 56px;
   height: 56px;
   border-radius: 999px;
   border: 0;
   background: rgba(255,255,255,0.95);
-  transform: translate(-100px, -100px); /* caché au début */
-  pointer-events: none; /* IMPORTANT: pour ne pas gêner le tracking */
+  color: #000;
+  font-size: 22px;
+  transform: translate(20px, 120px); /* visible dès le départ */
+  pointer-events: none;
 }
+
+#video { z-index: 1; }
+#ui { z-index: 10; }
