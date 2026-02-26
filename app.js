@@ -1,94 +1,157 @@
+import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
+
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
 const statusEl = document.getElementById("status");
 const startBtn = document.getElementById("startBtn");
-const box = document.getElementById("box");
 
-const colors = ["#00ffcc", "#ff3b30", "#34c759", "#007aff", "#ffcc00"];
-let colorIndex = 0;
+function setStatus(msg) { statusEl.textContent = msg; }
 
-function setStatus(msg) {
-  if (statusEl) statusEl.textContent = msg;
+function resize() {
+  canvas.width = Math.floor(window.innerWidth * devicePixelRatio);
+  canvas.height = Math.floor(window.innerHeight * devicePixelRatio);
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+window.addEventListener("resize", resize);
+resize();
+
+// Petite “boule particules” (2D) qui suit l’index
+const particles = Array.from({ length: 220 }, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  vx: 0,
+  vy: 0
+}));
+
+let target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+let handLandmarker = null;
+let running = false;
+
+async function startCamera() {
+  // Caméra arrière si possible
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: "environment" } },
+    audio: false
+  });
+
+  video.srcObject = stream;
+  video.muted = true;
+  video.playsInline = true;
+
+  await video.play();
 }
 
-// Attend qu'un élément existe dans le DOM
-function waitFor(selector, timeoutMs = 6000) {
-  return new Promise((resolve, reject) => {
-    const start = Date.now();
-    const t = setInterval(() => {
-      const el = document.querySelector(selector);
-      if (el) {
-        clearInterval(t);
-        resolve(el);
-      } else if (Date.now() - start > timeoutMs) {
-        clearInterval(t);
-        reject(new Error(`Timeout: ${selector}`));
-      }
-    }, 200);
+async function loadHandModel() {
+  // WASM + modèles hébergés par Google (stable)
+  const vision = await FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm"
+  );
+
+  handLandmarker = await HandLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath:
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+      delegate: "GPU"
+    },
+    runningMode: "VIDEO",
+    numHands: 1
   });
 }
 
-// Force la vidéo à jouer inline sur iPhone
-async function forceInlineVideoPlay() {
-  const v = document.querySelector("video");
-  if (!v) return false;
+function drawParticles() {
+  // fond transparent (on voit la caméra)
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-  // iOS/Safari requirements
-  v.setAttribute("playsinline", "");
-  v.setAttribute("webkit-playsinline", "");
-  v.muted = true;          // aide énormément iOS
-  v.autoplay = true;
+  // légère “lueur”
+  ctx.globalCompositeOperation = "lighter";
 
-  try {
-    await v.play();
-  } catch (e) {
-    // Sur iOS, play() peut échouer si pas déclenché par un geste user
-    return false;
+  for (const p of particles) {
+    const dx = target.x - p.x;
+    const dy = target.y - p.y;
+
+    // attraction + friction
+    p.vx += dx * 0.0006;
+    p.vy += dy * 0.0006;
+    p.vx *= 0.90;
+    p.vy *= 0.90;
+
+    p.x += p.vx * 16;
+    p.y += p.vy * 16;
+
+    // petit bruit
+    p.x += (Math.random() - 0.5) * 0.6;
+    p.y += (Math.random() - 0.5) * 0.6;
+
+    // wrap
+    if (p.x < 0) p.x += window.innerWidth;
+    if (p.x > window.innerWidth) p.x -= window.innerWidth;
+    if (p.y < 0) p.y += window.innerHeight;
+    if (p.y > window.innerHeight) p.y -= window.innerHeight;
+
+    // particule
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 255, 204, 0.55)";
+    ctx.fill();
   }
-  return true;
+
+  // point cible (index)
+  ctx.globalCompositeOperation = "source-over";
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, 10, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.8)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
 }
 
-async function startCameraFlow() {
-  setStatus("Démarrage caméra… (tap requis sur iPhone)");
-  startBtn && (startBtn.disabled = true);
+function updateTargetFromHand(result) {
+  if (!result || !result.landmarks || result.landmarks.length === 0) return;
 
-  // 1) attendre que AR.js crée la balise video
-  let video;
-  try {
-    video = await waitFor("video", 8000);
-  } catch (e) {
-    setStatus("Je ne trouve pas la vidéo caméra. Vérifie que AR.js est bien chargé.");
-    startBtn && (startBtn.disabled = false);
-    return;
-  }
+  // Index tip = landmark 8 (x,y en 0..1)
+  const lm = result.landmarks[0][8];
+  const x = (1 - lm.x) * window.innerWidth; // miroir pour que ça “suive” naturel
+  const y = lm.y * window.innerHeight;
 
-  // 2) forcer inline + tentative play() plusieurs fois
-  for (let k = 0; k < 20; k++) {
-    const ok = await forceInlineVideoPlay();
-    if (ok) {
-      setStatus("Caméra OK ✅ Vise le marqueur Hiro.");
-      if (startBtn) startBtn.style.display = "none";
-      return;
+  target.x = x;
+  target.y = y;
+}
+
+let lastTime = -1;
+function loop() {
+  if (!running) return;
+
+  const now = performance.now();
+  if (handLandmarker && video.readyState >= 2) {
+    // évite d’appeler trop vite
+    if (now !== lastTime) {
+      const res = handLandmarker.detectForVideo(video, now);
+      updateTargetFromHand(res);
+      lastTime = now;
     }
-    await new Promise((r) => setTimeout(r, 250));
   }
 
-  setStatus("Caméra toujours noire. Ferme l’onglet, rouvre Safari et retape Start Camera.");
-  startBtn && (startBtn.disabled = false);
+  drawParticles();
+  requestAnimationFrame(loop);
 }
 
-// Start button
-if (startBtn) {
-  startBtn.addEventListener("click", startCameraFlow);
-} else {
-  // si pas de bouton, on essaie quand même au 1er tap
-  window.addEventListener("click", startCameraFlow, { once: true });
-}
+startBtn.addEventListener("click", async () => {
+  try {
+    startBtn.disabled = true;
+    setStatus("Démarrage caméra…");
 
-// Tap = changer la couleur du cube
-window.addEventListener("pointerdown", () => {
-  if (!box) return;
-  colorIndex = (colorIndex + 1) % colors.length;
-  box.setAttribute("color", colors[colorIndex]);
+    await startCamera();
+
+    setStatus("Chargement modèle main…");
+    await loadHandModel();
+
+    setStatus("OK ✅ Mets ta main devant la caméra");
+    running = true;
+    loop();
+  } catch (e) {
+    console.error(e);
+    setStatus("Erreur. Ouvre en HTTPS + autorise la caméra.");
+    startBtn.disabled = false;
+  }
 });
-
-// Messages init
-setStatus("Clique “Start Camera”, autorise, puis vise le marqueur Hiro.");

@@ -2,70 +2,51 @@ html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background: #000;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
+/* Vidéo caméra plein écran */
+#video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Canvas par-dessus la vidéo */
+#canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* UI au-dessus */
 #ui {
   position: fixed;
-  left: 0;
-  top: 0;
-  width: 100%;
-  padding: 12px;
-  box-sizing: border-box;
-  pointer-events: none;
+  left: 12px;
+  top: 12px;
   z-index: 10;
+  pointer-events: none;
 }
 
-.hint {
-  display: inline-block;
+.card {
+  pointer-events: auto;
   background: rgba(0,0,0,0.55);
   color: #fff;
   padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.25;
+  border-radius: 14px;
+  max-width: 280px;
 }
 
-#status {
-  margin-top: 10px;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-  font-size: 14px;
-}
-
-a-scene, canvas {
-  position: fixed !important;
-  top: 0; left: 0;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Force A-Frame/AR.js à occuper tout l'écran sur iPhone */
-a-scene, canvas {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* On garde ton UI au-dessus */
-#ui { z-index: 10; }
-
-
-#startBtn{
-  margin-top: 10px;
+#startBtn {
+  margin-top: 8px;
   padding: 10px 14px;
   border-radius: 12px;
-  border: none;
+  border: 0;
   background: rgba(255,255,255,0.9);
-  pointer-events: auto; /* important car #ui est pointer-events:none */
 }
 
-/* iPhone fix: force la scène AR à occuper tout l’écran */
-a-scene, canvas, video {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-}
+.small { margin-top: 8px; font-size: 12px; opacity: 0.85; }

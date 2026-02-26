@@ -1,41 +1,31 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>AR iPhone (AR.js)</title>
-    <link rel="stylesheet" href="style.css" />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Hand AR – Boule contrôlée par la main</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-    <!-- Versions souvent plus stables sur iPhone -->
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.min.js"></script>
-  </head>
+<body>
+  <!-- Caméra -->
+  <video id="video" playsinline webkit-playsinline muted></video>
 
-  <body>
-    <div id="ui">
-      <div class="hint">
-        1) test Ouvre en HTTPS sur iPhone<br/>
-        2) Autorise la caméra<br/>
-        3) Vise le marqueur “Hiro”
+  <!-- Dessin (boule + repères) -->
+  <canvas id="canvas"></canvas>
+
+  <!-- UI -->
+  <div id="ui">
+    <div class="card">
+      <div><b>Hand AR (sans WebXR)</b></div>
+      <div id="status">Clique “Start”</div>
+      <button id="startBtn">Start</button>
+      <div class="small">
+        Astuce: bonne lumière, main à ~30–70cm.
       </div>
-      <div id="status">Clique Start Camera</div>
-      <button id="startBtn">Start Camera</button>
     </div>
+  </div>
 
-    <a-scene
-      embedded
-      vr-mode-ui="enabled: false"
-      renderer="antialias: true"
-      arjs="sourceType: webcam; facingMode: environment; debugUIEnabled: false;"
-    >
-      <!-- IMPORTANT: sur AR.js marker, on met camera ici -->
-      <a-entity camera></a-entity>
-
-      <a-marker preset="hiro">
-        <a-box id="box" position="0 0.5 0" rotation="0 45 0" color="#00ffcc"></a-box>
-      </a-marker>
-    </a-scene>
-
-    <script src="app.js"></script>
-  </body>
+  <script type="module" src="app.js"></script>
+</body>
 </html>
