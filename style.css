@@ -6,24 +6,26 @@ html, body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* Vidéo caméra plein écran */
+/* caméra plein écran */
 #video {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 1;
 }
 
-/* Canvas par-dessus la vidéo */
+/* dessin par-dessus */
 #canvas {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 5;
 }
 
-/* UI au-dessus */
+/* UI */
 #ui {
   position: fixed;
   left: 12px;
@@ -36,17 +38,23 @@ html, body {
   pointer-events: auto;
   background: rgba(0,0,0,0.55);
   color: #fff;
-  padding: 10px 12px;
+  padding: 12px 12px;
   border-radius: 14px;
-  max-width: 280px;
+  max-width: 320px;
+  backdrop-filter: blur(8px);
 }
 
-#startBtn {
-  margin-top: 8px;
+.title { font-weight: 700; margin-bottom: 6px; }
+
+.row { display: flex; gap: 10px; margin-top: 10px; }
+
+button {
   padding: 10px 14px;
   border-radius: 12px;
   border: 0;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
 }
 
-.small { margin-top: 8px; font-size: 12px; opacity: 0.85; }
+button:disabled { opacity: 0.5; }
+
+.small { margin-top: 10px; font-size: 12px; opacity: 0.85; }
