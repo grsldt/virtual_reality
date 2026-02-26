@@ -61,3 +61,11 @@ a-scene, canvas {
   background: rgba(255,255,255,0.9);
   pointer-events: auto; /* important car #ui est pointer-events:none */
 }
+
+/* iPhone fix: force la scène AR à occuper tout l’écran */
+a-scene, canvas, video {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
