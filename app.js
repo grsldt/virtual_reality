@@ -14,3 +14,12 @@ window.addEventListener("pointerdown", () => {
   if (box) box.setAttribute("color", colors[i]);
   setStatus("Tape pour changer la couleur (vise Hiro).");
 });
+
+
+setInterval(() => {
+  const v = document.querySelector("video");
+  if (v) {
+    v.setAttribute("playsinline", "");
+    v.setAttribute("webkit-playsinline", "");
+  }
+}, 500);
