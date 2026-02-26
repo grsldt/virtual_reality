@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>AR iPhone (AR.js)</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- A-Frame + AR.js (CDN) -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
+  </head>
+
+  <body>
+    <div id="ui">
+      <div class="hint">
+        1) Ouvre en HTTPS sur iPhone<br/>
+        2) Autorise la caméra<br/>
+        3) Vise le marqueur “Hiro”<br/>
+        4) Tape l’écran pour changer la couleur
+      </div>
+      <div id="status">Chargement…</div>
+    </div>
+
+    <a-scene
+      embedded
+      vr-mode-ui="enabled: false"
+      renderer="colorManagement: true; antialias: true; alpha: true"
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+    >
+      <a-entity camera></a-entity>
+
+      <!-- Marqueur Hiro (par défaut) -->
+      <a-marker preset="hiro">
+        <!-- Objet 3D -->
+        <a-box
+          id="box"
+          position="0 0.5 0"
+          rotation="0 45 0"
+          depth="1" height="1" width="1"
+          color="#00ffcc"
+        ></a-box>
+
+        <a-entity light="type: directional; intensity: 0.9" position="1 2 1"></a-entity>
+        <a-entity light="type: ambient; intensity: 0.6"></a-entity>
+      </a-marker>
+    </a-scene>
+
+    <script src="app.js"></script>
+  </body>
+</html>
