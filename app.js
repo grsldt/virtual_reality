@@ -112,7 +112,7 @@ function clearAll() {
 
 function drawSegment(p0, p1, pressure) {
   // Neon stroke
-  const w = 3 + pressure * 10; // 3..13
+  const w = 1.8 + pressure * 5; // 3..13
   dctx.lineCap = "round";
   dctx.lineJoin = "round";
   dctx.strokeStyle = "rgba(0,220,255,0.9)";
@@ -127,7 +127,7 @@ function drawSegment(p0, p1, pressure) {
 // --------------------
 // State machine
 // --------------------
-const CURSOR_SIZE = 96;
+const CURSOR_SIZE = 56;
 let target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 let smooth = { x: target.x, y: target.y };
 
@@ -158,7 +158,7 @@ function updateUI() {
   const py = smooth.y - CURSOR_SIZE / 2;
 
   // small scale reacts to pinch
-  const scale = 1 + pinch01Sm * 0.45;
+  const scale = 1 + pinch01Sm * 0.25;
 
   followEl.style.transform = `translate(${px}px, ${py}px) scale(${scale})`;
 
