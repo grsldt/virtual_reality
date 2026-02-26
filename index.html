@@ -2,30 +2,68 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Hand AR – Boule contrôlée par la main</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hand Follow</title>
 </head>
 
-<body>
-  <!-- Caméra -->
-  <video id="video" playsinline webkit-playsinline muted></video>
+<body style="margin:0;overflow:hidden;background:black;">
 
-  <!-- Dessin (boule + repères) -->
-  <canvas id="canvas"></canvas>
+  <!-- VIDEO CAMERA -->
+  <video id="video"
+    playsinline
+    webkit-playsinline
+    muted
+    style="
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:1;
+    ">
+  </video>
+
+  <!-- BOUTON QUI SUIT -->
+  <button id="followBtn"
+    style="
+      position:fixed;
+      left:0;
+      top:0;
+      width:60px;
+      height:60px;
+      border-radius:999px;
+      border:none;
+      background:white;
+      font-size:24px;
+      z-index:9999;
+      transform:translate(50px,150px);
+      pointer-events:none;
+    ">
+    👆
+  </button>
 
   <!-- UI -->
-  <div id="ui">
-    <div class="card">
-      <div><b>Hand AR (sans WebXR)</b></div>
-      <div id="status">test Clique “Start”</div>
-      <button id="startBtn">Start</button>
-      <div class="small">
-        Astuce: bonne lumière, main à ~30–70cm.
-      </div>
-    </div>
+  <div style="
+    position:fixed;
+    top:20px;
+    left:20px;
+    z-index:10000;
+    color:white;
+    font-family:sans-serif;
+  ">
+    <div id="status">Clique Start</div>
+    <button id="startBtn"
+      style="
+        margin-top:10px;
+        padding:10px 14px;
+        border-radius:10px;
+        border:none;
+      ">
+      Start
+    </button>
   </div>
 
   <script type="module" src="app.js"></script>
+
 </body>
 </html>
