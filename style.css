@@ -1,150 +1,171 @@
 /* =========================
-   GLOBAL
+GLOBAL
 ========================= */
 
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
-  background: #000;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  -webkit-font-smoothing: antialiased;
+margin: 0;
+padding: 0;
+height: 100%;
+overflow: hidden;
+background: #000;
+font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+-webkit-font-smoothing: antialiased;
 }
 
 /* =========================
-   VIDEO CAMERA
+CAMERA
 ========================= */
 
 #video {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
+position: fixed;
+inset: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+z-index: 1;
 }
 
 /* =========================
-   FOLLOW BUTTON (PRO STYLE)
+ENERGY CURSOR (FOLLOW)
 ========================= */
 
 #followBtn {
-  position: fixed;
-  left: 0;
-  top: 0;
+position: fixed;
+left: 0;
+top: 0;
 
-  width: 68px;
-  height: 68px;
+width: 96px;
+height: 96px;
 
-  border-radius: 999px;
-  border: none;
-  outline: none;
+border: none;
+border-radius: 999px;
+pointer-events: none;
+z-index: 9999;
 
-  pointer-events: none;
-  z-index: 9999;
+/* centre transparent + glow */
+background: radial-gradient(
+circle at center,
+rgba(0, 255, 255, 0.14),
+rgba(0, 160, 255, 0.06) 55%,
+transparent 74%
+);
 
-  /* Glass look */
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(255,255,255,0.95),
-    rgba(255,255,255,0.55)
-  );
+box-shadow:
+0 0 18px rgba(0, 220, 255, 0.55),
+0 0 42px rgba(0, 160, 255, 0.35),
+0 0 90px rgba(0, 120, 255, 0.20);
 
-  backdrop-filter: blur(8px);
+backdrop-filter: blur(3px);
 
-  box-shadow:
-    0 12px 40px rgba(0,0,0,0.35),
-    0 0 0 1px rgba(255,255,255,0.4) inset;
+/* caché au départ, puis déplacé par JS */
+transform: translate(-200px, -200px);
 
-  transform: translate(-200px, -200px);
-
-  will-change: transform, filter;
-  transition: box-shadow 0.2s ease;
+will-change: transform, filter;
 }
 
-/* Glow halo */
+/* coeur (petit disque transparent) */
 #followBtn::before {
-  content: "";
-  position: absolute;
-  inset: -16px;
-  border-radius: 999px;
+content: "";
+position: absolute;
+inset: 26px;
+border-radius: 999px;
 
-  background: radial-gradient(
-    circle,
-    rgba(0,255,200,0.45),
-    rgba(0,255,200,0)
-  );
+background: rgba(0, 255, 255, 0.06);
+border: 1px solid rgba(0, 220, 255, 0.45);
 
-  filter: blur(3px);
-  opacity: 0.9;
-  transform: scale(0.85);
+box-shadow:
+0 0 10px rgba(0, 220, 255, 0.25) inset,
+0 0 18px rgba(0, 220, 255, 0.25);
 }
 
-/* Light reflection */
+/* anneau énergétique tournant */
 #followBtn::after {
-  content: "";
-  position: absolute;
-  top: 14px;
-  right: 16px;
+content: "";
+position: absolute;
+inset: -10px;
+border-radius: 999px;
 
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
+border: 2px solid rgba(0, 220, 255, 0.55);
+border-top-color: rgba(0, 220, 255, 0.08);
+border-left-color: rgba(0, 220, 255, 0.12);
 
-  background: rgba(255,255,255,0.85);
-  opacity: 0.5;
+filter: drop-shadow(0 0 10px rgba(0, 220, 255, 0.35));
+animation: rotateEnergy 1.6s linear infinite;
+opacity: 0.95;
 }
 
-/* Active pulse */
-#followBtn.active::before {
-  animation: pulse 1.1s ease-in-out infinite;
+@keyframes rotateEnergy {
+from { transform: rotate(0deg); }
+to { transform: rotate(360deg); }
 }
 
-@keyframes pulse {
-  0%   { transform: scale(0.8); opacity: 0.6; }
-  50%  { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.8); opacity: 0.6; }
+/* pulse quand main détectée (JS met .active) */
+#followBtn.active {
+filter:
+drop-shadow(0 0 18px rgba(0, 230, 255, 0.85))
+drop-shadow(0 0 42px rgba(0, 140, 255, 0.65));
 }
 
 /* =========================
-   UI PANEL
+UI
 ========================= */
 
 #ui {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 10000;
-  pointer-events: none;
+position: fixed;
+top: 18px;
+left: 18px;
+z-index: 10000;
+pointer-events: none;
 }
 
 #ui > div {
-  pointer-events: auto;
+pointer-events: auto;
+color: rgba(255,255,255,0.92);
 
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(10px);
+background: rgba(0, 0, 0, 0.45);
+border: 1px solid rgba(0, 200, 255, 0.18);
+border-radius: 16px;
 
-  color: #fff;
-  padding: 14px 16px;
-  border-radius: 16px;
+padding: 12px 14px;
+box-shadow:
+0 12px 34px rgba(0,0,0,0.40),
+0 0 40px rgba(0,140,255,0.08);
 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+backdrop-filter: blur(10px);
 }
 
 #status {
-  margin-bottom: 10px;
-  font-size: 14px;
+font-size: 13px;
+line-height: 1.25;
+margin-bottom: 10px;
+text-shadow: 0 1px 10px rgba(0, 200, 255, 0.10);
 }
 
 #startBtn {
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(255,255,255,0.95);
-  font-weight: 600;
+pointer-events: auto;
+
+padding: 10px 14px;
+border-radius: 12px;
+border: 1px solid rgba(0, 200, 255, 0.22);
+
+color: rgba(255,255,255,0.92);
+background: rgba(0, 130, 255, 0.14);
+
+font-weight: 600;
+letter-spacing: 0.2px;
+
+box-shadow:
+0 0 0 1px rgba(0, 200, 255, 0.12) inset,
+0 10px 28px rgba(0,0,0,0.35);
+
+transition: transform 0.12s ease, background 0.12s ease;
+}
+
+#startBtn:active {
+transform: scale(0.98);
+background: rgba(0, 130, 255, 0.20);
 }
 
 #startBtn:disabled {
-  opacity: 0.5;
+opacity: 0.55;
 }
