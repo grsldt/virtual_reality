@@ -162,9 +162,9 @@ function updateUI() {
 
   followEl.style.transform = `translate(${px}px, ${py}px) scale(${scale})`;
 
-  if (penDown) setStatus("✍️ Écriture (pinch)");
-  else if (pausedByFist) setStatus("✋ Pause (poing) — ouvre la main pour reprendre");
-  else setStatus("Main détectée ✅ (pinch pour écrire, ✌️ = effacer)");
+  if (penDown) setStatus(" Écriture (pinch)");
+  else if (pausedByFist) setStatus(" Pause (poing) — ouvre la main pour reprendre");
+  else setStatus("Main détectée (pinch pour écrire = effacer)");
 }
 
 // --------------------
@@ -250,7 +250,7 @@ startBtn.addEventListener("click", async () => {
     setStatus("Modèle main…");
     await loadModel();
 
-    setStatus("OK ✅ Pinch pour écrire • ✌️ pour effacer • Poing pour pause");
+    setStatus("OK Pinch pour écrire • pour effacer • Poing pour pause");
     running = true;
     loop();
   } catch (e) {
